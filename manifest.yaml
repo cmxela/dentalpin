@@ -1,0 +1,19 @@
+apiVersion: thinkube.io/v1
+kind: TemplateManifest
+metadata:
+  name: dentalpin
+  title: DentalPin
+  description: Open-source dental clinic management — patients, agenda, odontogram, budgets, billing
+  version: 2.7.2
+  author: DentalPin contributors
+  tags: ["dental", "clinic", "nuxt", "fastapi", "postgresql"]
+
+parameters: []
+
+secrets:
+  - name: DENTALPIN_SECRET_KEY
+    description: Signs DentalPin's sessions and encrypts its stored credentials; at least 32 characters (openssl rand -hex 32)
+  - name: DENTALPIN_BUDGET_PUBLIC_SECRET_KEY
+    description: Signs the public budget links sent to patients (openssl rand -hex 32)
+  - name: DENTALPIN_AGENDA_PUBLIC_SECRET_KEY
+    description: Signs the public agenda links (openssl rand -hex 32)

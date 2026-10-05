@@ -1,0 +1,45 @@
+apiVersion: thinkube.io/v1
+kind: ThinkubeDeployment
+metadata:
+  version: "2.7.2"
+
+spec:
+  deployment:
+    type: app
+
+  containers:
+    # Built from backend/Containerfile. Its entrypoint maps the platform's
+    # variables to DentalPin's, then runs DentalPin's own entrypoint, which
+    # applies the migrations of the installed modules.
+    - name: backend
+      build: ./backend
+      port: 8000
+      size: large
+      health: /health
+      capabilities:
+        - large-uploads
+
+    # Built from the root Containerfile: the Nuxt build bakes every module
+    # layer from backend/app/modules, so its context is the whole repository.
+    - name: frontend
+      build: .
+      port: 3000
+      size: medium
+      health: /
+
+  routes:
+    - path: /api
+      to: backend
+    - path: /
+      to: frontend
+
+  services:
+    - database
+
+  env:
+    - name: SEED_ON_STARTUP
+      description: "1 loads the demo clinic on startup (admin@demo.clinic / demo1234); 0 for a real clinic"
+      default: "1"
+    - name: SEED_LANG
+      description: "Language of the demo clinic: en, es, de, fr, it, pt, pl, hu, ta, te"
+      default: "en"

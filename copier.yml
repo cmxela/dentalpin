@@ -1,0 +1,13 @@
+# What Copier hands an application deployed on Thinkube. Copier's default
+# exclusions, plus the GitHub workflows, which build and publish to GitHub
+# and have no meaning in the application's Thinkube repository.
+_exclude:
+  - copier.yml
+  - copier.yaml
+  - ~*
+  - "*.py[co]"
+  - __pycache__
+  - .git
+  - .DS_Store
+  - .svn
+  - .github
