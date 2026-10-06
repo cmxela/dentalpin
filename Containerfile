@@ -18,7 +18,8 @@ COPY frontend/ ./
 # time which ones are visible.
 RUN node scripts/modules-json.mjs /module_layers
 
-# The Nitro build of all module layers and locales needs more than 4GB.
+# The build keeps each Vite stage's module graph until the end, about 3GB
+# before Nitro starts; the heap fits the 8Gi build pod (buildSize: medium).
 ENV NODE_OPTIONS="--max-old-space-size=6144"
 RUN npm run build
 

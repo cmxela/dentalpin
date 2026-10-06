@@ -127,6 +127,11 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-15',
 
+  // No sourcemaps in the build: the server bundle holds every module
+  // layer, and generating its sourcemaps costs build memory. Nothing in
+  // the image reads them (no --enable-source-maps, Sentry off by default).
+  sourcemap: { server: false, client: false },
+
   vite: {
     optimizeDeps: {
       // Pre-bundle deps that Vite otherwise discovers at runtime. Runtime

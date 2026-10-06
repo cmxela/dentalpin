@@ -1,7 +1,7 @@
 apiVersion: thinkube.io/v1
 kind: ThinkubeDeployment
 metadata:
-  version: "2.7.2"
+  version: "2.7.3"
 
 spec:
   deployment:
@@ -21,10 +21,12 @@ spec:
 
     # Built from the root Containerfile: the Nuxt build bakes every module
     # layer from backend/app/modules, so its context is the whole repository.
+    # Bundling 52 layers holds about 3GB of heap, so the build gets 8Gi.
     - name: frontend
       build: .
       port: 3000
       size: medium
+      buildSize: medium
       health: /
 
   routes:

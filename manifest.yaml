@@ -4,7 +4,7 @@ metadata:
   name: dentalpin
   title: DentalPin
   description: Open-source dental clinic management — patients, agenda, odontogram, budgets, billing
-  version: 2.7.2
+  version: 2.7.3
   author: DentalPin contributors
   tags: ["dental", "clinic", "nuxt", "fastapi", "postgresql"]
 
