@@ -4,7 +4,7 @@ metadata:
   name: dentalpin
   title: DentalPin
   description: Open-source dental clinic management — patients, agenda, odontogram, budgets, billing
-  version: 2.7.3
+  version: 2.7.4
   author: DentalPin contributors
   tags: ["dental", "clinic", "nuxt", "fastapi", "postgresql"]
 
@@ -17,3 +17,5 @@ secrets:
     description: Signs the public budget links sent to patients (openssl rand -hex 32)
   - name: DENTALPIN_AGENDA_PUBLIC_SECRET_KEY
     description: Signs the public agenda links (openssl rand -hex 32)
+  - name: DENTALPIN_LLM_API_KEY
+    description: Thinkube API token the copilot uses to call the LLM Gateway (create it in Thinkube Control, API Tokens)

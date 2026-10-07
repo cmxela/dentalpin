@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from app.config import settings
 from app.core.llm.base import LLMConfigError, Provider
 from app.core.llm.registry import llm_provider_registry
@@ -11,7 +13,21 @@ from app.core.llm.spec import ProviderConfig, ProviderSpec
 def _create_openai(config: ProviderConfig) -> Provider:
     from app.core.llm.openai_provider import OpenAIProvider
 
-    return OpenAIProvider(api_key=config.api_key or "")
+    return OpenAIProvider(api_key=config.api_key or "", extra_body=_openai_extra_body())
+
+
+def _openai_extra_body() -> dict:
+    """COPILOT_OPENAI_EXTRA_BODY as a dict; a value that is not a JSON object is an error."""
+    raw = settings.COPILOT_OPENAI_EXTRA_BODY
+    if not raw:
+        return {}
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise LLMConfigError(f"COPILOT_OPENAI_EXTRA_BODY is not valid JSON: {exc}") from exc
+    if not isinstance(value, dict):
+        raise LLMConfigError("COPILOT_OPENAI_EXTRA_BODY must be a JSON object")
+    return value
 
 
 def _create_anthropic(config: ProviderConfig) -> Provider:

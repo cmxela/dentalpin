@@ -32,7 +32,7 @@ from app.core.llm.base import (
 class OpenAIProvider:
     """Streams completions from OpenAI, speaking neutral types."""
 
-    def __init__(self, *, api_key: str) -> None:
+    def __init__(self, *, api_key: str, extra_body: dict[str, Any] | None = None) -> None:
         if not api_key:
             raise LLMConfigError("OpenAI provider requires OPENAI_API_KEY")
         # Imported lazily so the dependency is only needed when the
@@ -40,6 +40,7 @@ class OpenAIProvider:
         from openai import AsyncOpenAI
 
         self._client = AsyncOpenAI(api_key=api_key)
+        self._extra_body = extra_body or {}
 
     async def complete(
         self,
@@ -65,6 +66,8 @@ class OpenAIProvider:
         if tools:
             kwargs["tools"] = [_sanitize_tool_schema(t) for t in tools]
             kwargs["parallel_tool_calls"] = False
+        if self._extra_body:
+            kwargs["extra_body"] = self._extra_body
 
         # index -> {"id": str, "name": str, "args": str}
         pending: dict[int, dict[str, str]] = {}

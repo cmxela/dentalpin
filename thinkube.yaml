@@ -1,7 +1,7 @@
 apiVersion: thinkube.io/v1
 kind: ThinkubeDeployment
 metadata:
-  version: "2.7.3"
+  version: "2.7.4"
 
 spec:
   deployment:
@@ -45,3 +45,12 @@ spec:
     - name: SEED_LANG
       description: "Language of the demo clinic: en, es, de, fr, it, pt, pl, hu, ta, te"
       default: "en"
+    - name: OPENAI_BASE_URL
+      description: "OpenAI-compatible address the copilot calls: the cluster's LLM Gateway"
+      default: "https://llm.{{ domain_name }}/v1"
+    - name: COPILOT_MODEL_CHAT_OPENAI
+      description: "Model the copilot uses, as the gateway names it"
+      default: "nvidia/Qwen3.6-35B-A3B-NVFP4"
+    - name: COPILOT_OPENAI_EXTRA_BODY
+      description: "Extra fields of every copilot request; turns Qwen's thinking off"
+      default: '{"chat_template_kwargs": {"enable_thinking": false}}'

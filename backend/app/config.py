@@ -194,6 +194,12 @@ class Settings(BaseSettings):
     COPILOT_MODEL_CHAT_OPENAI: str = "gpt-5.4-mini"
     COPILOT_MODEL_CHAT_ANTHROPIC: str = "claude-sonnet-5"
     COPILOT_MAX_TOKENS: int = 4096
+    # Extra fields for every OpenAI-compatible chat request, as a JSON
+    # object: for a self-hosted server, options such as
+    # {"chat_template_kwargs": {"enable_thinking": false}}. Empty sends none.
+    # The server address comes from OPENAI_BASE_URL, which the openai client
+    # reads itself.
+    COPILOT_OPENAI_EXTRA_BODY: str = ""
     COPILOT_REDACTION_DEFAULT: bool = True
 
     @property

@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import time
+import types
+import typing
 from typing import TYPE_CHECKING, Any
 
 from app.core.agents.tools.schema import tool_to_anthropic_schema, tool_to_openai_schema
@@ -158,7 +161,7 @@ class ToolRegistry:
                 return ToolResult(ok=False, error=f"permission denied: {required}")
 
         try:
-            validated = tool.parameters.model_validate(arguments)
+            validated = tool.parameters.model_validate(_decode_json_strings(tool.parameters, arguments))
         except Exception as exc:
             await AuditService.record(
                 ctx,
@@ -200,3 +203,37 @@ class ToolRegistry:
 
 # Global singleton
 tool_registry = ToolRegistry()
+
+
+def _accepts_container(annotation: Any) -> bool:
+    """Whether a field's type admits a list, tuple, set or dict, directly or in a union."""
+    origin = typing.get_origin(annotation)
+    if origin in (typing.Union, types.UnionType):
+        return any(_accepts_container(arg) for arg in typing.get_args(annotation))
+    return (origin or annotation) in (list, tuple, set, frozenset, dict)
+
+
+def _decode_json_strings(model: Any, arguments: dict[str, Any]) -> dict[str, Any]:
+    """Arguments with a list or dict field given as its JSON text decoded.
+
+    Some model servers pass a structured argument as the JSON text of its
+    value (vLLM's XML tool parsers do so for a field whose schema states its
+    type only through anyOf, as an optional list does). Text that is not
+    JSON, or decodes to something that is not a list or dict, is left for
+    validation to refuse.
+    """
+    decoded = dict(arguments)
+    for name, field in model.model_fields.items():
+        value = decoded.get(name)
+        if not isinstance(value, str) or not _accepts_container(field.annotation):
+            continue
+        text = value.strip()
+        if not text.startswith(("[", "{")):
+            continue
+        try:
+            parsed = json.loads(text)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, (list, dict)):
+            decoded[name] = parsed
+    return decoded

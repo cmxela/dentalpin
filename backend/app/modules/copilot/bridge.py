@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import secrets
 from collections.abc import AsyncIterator
+from datetime import datetime
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +22,7 @@ from app.core.agents.guardrails import GuardrailConfig
 from app.core.agents.orchestrator import ConfirmationRequired, ToolCallFinished, TurnUsage, run_turn
 from app.core.agents.redaction import Redactor
 from app.core.agents.tools.registry import tool_registry
+from app.core.auth.models import Clinic
 from app.core.auth.permissions import permission_matches
 from app.core.llm.base import ProviderMessage, Role, TextBlock, ToolResultBlock, ToolUseBlock
 from app.core.llm.factory import get_provider, get_provider_spec
@@ -63,6 +66,23 @@ _PLAYBOOKS = (
 )
 
 SYSTEM_PROMPT = _BASE_PROMPT + _PLAYBOOKS
+
+_WEEKDAYS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
+
+
+async def _system_prompt(db: AsyncSession, clinic_id: UUID) -> str:
+    """SYSTEM_PROMPT with the clinic's date today, in its own timezone.
+
+    Without it the model resolves "today" or "tomorrow" by guessing a date.
+    """
+    clinic = await db.get(Clinic, clinic_id)
+    if clinic is None:
+        raise ValueError(f"Clinic {clinic_id} not found")
+    now = datetime.now(ZoneInfo(clinic.timezone))
+    return (
+        f"{SYSTEM_PROMPT}\n\nHoy es {_WEEKDAYS[now.weekday()]} {now.date().isoformat()} "
+        f"en la clínica (zona horaria {clinic.timezone})."
+    )
 
 # Copilot gates writes via inline confirmation (a turn-level pause), so
 # the approval-queue triggers are disabled. Rate limits + denylist stay.
@@ -191,7 +211,7 @@ async def drive_turn(
     async for ev in run_turn(
         ctx=ctx,
         provider=provider,
-        system=SYSTEM_PROMPT,
+        system=await _system_prompt(db, conv.clinic_id),
         history=history,
         tool_names=_tool_names_for(permissions, include_free_text=not redactor.enabled),
         redactor=redactor,
@@ -262,7 +282,7 @@ async def resume_turn(
     async for ev in run_turn(
         ctx=ctx,
         provider=provider,
-        system=SYSTEM_PROMPT,
+        system=await _system_prompt(db, conv.clinic_id),
         history=history,
         tool_names=_tool_names_for(permissions, include_free_text=not redactor.enabled),
         redactor=redactor,

@@ -20,6 +20,10 @@ export SECRET_KEY="${DENTALPIN_SECRET_KEY:?DENTALPIN_SECRET_KEY is not set: add 
 export BUDGET_PUBLIC_SECRET_KEY="${DENTALPIN_BUDGET_PUBLIC_SECRET_KEY:?DENTALPIN_BUDGET_PUBLIC_SECRET_KEY is not set: add it on the Secrets page of Thinkube Control}"
 export AGENDA_PUBLIC_SECRET_KEY="${DENTALPIN_AGENDA_PUBLIC_SECRET_KEY:?DENTALPIN_AGENDA_PUBLIC_SECRET_KEY is not set: add it on the Secrets page of Thinkube Control}"
 
+# The copilot calls the cluster's LLM Gateway with a Thinkube API token, as
+# the OpenAI client's key; OPENAI_BASE_URL comes from thinkube.yaml.
+export OPENAI_API_KEY="${DENTALPIN_LLM_API_KEY:?DENTALPIN_LLM_API_KEY is not set: add it on the Secrets page of Thinkube Control}"
+
 # The browser reaches the API on the application's own origin.
 export ALLOWED_ORIGINS="${APP_URL:?APP_URL is not set by the platform}"
 
